@@ -11,8 +11,11 @@
   "dependencies": {
     "ethers": "^6.13.5",
     "next": "^15.2.4",
+    "qr": "^0.4.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "viem": "^2.23.15",
+    "wagmi": "^2.14.15"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
