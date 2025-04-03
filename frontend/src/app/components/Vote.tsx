@@ -1,103 +1,88 @@
-"use client";
+import { useEffect } from "react";
+import { usePollData } from "@/app/hooks/usePollData";
+import { useVote } from "@/app/hooks/useVote";
+import Duration from "@/app/components/Duration";
 
-import { useState, useEffect } from "react";
-import { BrowserProvider, JsonRpcProvider, Contract } from "ethers";
+type VoteProps = {
+  pollId: number;
+};
 
-declare global {
-  interface Window {
-    ethereum?: any;
-  }
-}
-
-const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS!;
-const POLYGON_RPC_URL = process.env.NEXT_PUBLIC_POLYGON_RPC_URL!;
-
-const ABI = [
-  "function candidates(uint256) view returns (string memory, uint256)",
-  "function candidatesCount() view returns (uint256)",
-  "function vote(uint256 candidateId) public",
-];
-
-export default function Vote() {
-  const [candidates, setCandidates] = useState<any[]>([]);
-  const [currentAccount, setCurrentAccount] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  // Connect MetaMask
-  const connectWallet = async () => {
-    if (window.ethereum) {
-      const provider = new BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
-      setCurrentAccount(await signer.getAddress());
-    } else {
-      alert("Please install MetaMask!");
-    }
-  };
-
-  const fetchCandidates = async () => {
-    const provider = new JsonRpcProvider(POLYGON_RPC_URL);
-    const contract = new Contract(CONTRACT_ADDRESS, ABI, provider);
-    const count = await contract.candidatesCount();
-
-    let candidatesList = [];
-    for (let i = 0; i < count; i++) {
-      const [name, voteCount] = await contract.candidates(i);
-      candidatesList.push({ id: i, name, voteCount });
-    }
-    setCandidates(candidatesList);
-  };
-
-  const vote = async (candidateId: number) => {
-    if (!currentAccount) {
-      alert("Please connect your wallet.");
-      return;
-    }
-
-    setLoading(true);
-    const provider = new BrowserProvider(window.ethereum);
-    const signer = await provider.getSigner();
-    const contract = new Contract(CONTRACT_ADDRESS, ABI, signer);
-
-    try {
-      const tx = await contract.vote(candidateId);
-      await tx.wait();
-      alert("Vote successfully cast!");
-      fetchCandidates(); // Refresh UI
-    } catch (error) {
-      console.error("Vote failed", error);
-      alert("You have already voted");
-    } finally {
-      setLoading(false);
-    }
-  };
+export default function Vote({ pollId }: VoteProps) {
+  const { options, endTime, hasEnded, isLoading, refetch } =
+    usePollData(pollId);
+  const { selectedOption, setSelectedOption, hasVoted, handleVote } =
+    useVote(pollId);
 
   useEffect(() => {
-    if (window.ethereum) {
-      connectWallet();
-      fetchCandidates();
-    }
-  }, []);
+    if (!endTime || hasEnded) return;
+
+    const interval = setInterval(() => {
+      if (BigInt(Date.now()) / BigInt(1000) >= BigInt(endTime)) {
+        refetch();
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [endTime, hasEnded, refetch]);
 
   return (
-    <div>
-      {!currentAccount && (
-        <button onClick={connectWallet}>Connect Wallet</button>
+    <div
+      className={`max-w-md mx-auto bg-amber-100 shadow-lg rounded-lg p-6 m-4 ${
+        hasEnded ? "bg-gray-300" : ""
+      }`}
+    >
+      <h1 className="text-2xl font-bold text-center text-gray-800">Poll</h1>
+      <h2 className="text-1xl text-center text-gray-800 mb-6">ID: {pollId}</h2>
+
+      {isLoading ? (
+        <div className="text-center text-lg font-semibold text-gray-500 mt-4">
+          Loading...
+        </div>
+      ) : (
+        <ul className="mt-4">
+          {options.map((option) => {
+            const maxVotes = Math.max(
+              ...options.map((opt) => Number(opt.voteCount.toString()))
+            );
+            const isMostVoted =
+              option.voteCount.toString() === maxVotes.toString();
+
+            const optionColor = hasEnded
+              ? isMostVoted
+                ? "bg-green-300"
+                : "bg-gray-200"
+              : selectedOption === option.id
+              ? "bg-blue-500 text-white"
+              : "bg-gray-100";
+
+            return (
+              <li
+                key={option.id}
+                className={`p-2 border rounded cursor-pointer mt-2 ${optionColor} ${
+                  hasEnded ? "pointer-events-none opacity-60" : ""
+                }`}
+                onClick={() => {
+                  if (!hasEnded && !hasVoted) {
+                    setSelectedOption(option.id);
+                  }
+                }}
+              >
+                {option.name} {hasEnded ? `votes: ${option.voteCount}` : ""}
+              </li>
+            );
+          })}
+        </ul>
       )}
-      {currentAccount && <p>Connected as: {currentAccount}</p>}
 
-      <h2>Candidates:</h2>
-      <ul>
-        {candidates.map((candidate) => (
-          <li key={candidate.id}>
-            {candidate.name} - Votes: {candidate.voteCount}
-            <button onClick={() => vote(candidate.id)} disabled={loading}>
-              Vote
-            </button>
-          </li>
-        ))}
-      </ul>
+      <button
+        onClick={handleVote}
+        className="w-full mt-4 bg-green-500 text-white p-2 rounded disabled:bg-gray-400 cursor-pointer disabled:cursor-not-allowed hover:bg-green-600"
+        disabled={selectedOption === null || hasEnded || hasVoted}
+      >
+        Vote
+      </button>
 
-      {loading && <p>Loading...</p>}
+      {endTime !== null && <Duration endTime={endTime} />}
     </div>
   );
 }
