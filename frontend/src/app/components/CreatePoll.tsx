@@ -1,5 +1,7 @@
+"use client";
 import { useCreatePoll } from "@/app/hooks/useCreatePoll";
 import { usePollNavigation } from "@/app/hooks/usePollNavigation";
+import ConnectWallet from "./ConnectWallet";
 
 export default function CreatePoll() {
   const {
@@ -12,8 +14,8 @@ export default function CreatePoll() {
     setNewOption,
     addOption,
     handleCreatePoll,
-    isConnected,
     hash,
+    isConnected,
   } = useCreatePoll();
 
   usePollNavigation(hash);
@@ -59,13 +61,17 @@ export default function CreatePoll() {
           </li>
         ))}
       </ul>
-      <button
-        onClick={handleCreatePoll}
-        className="w-full bg-green-500 text-white mt-2 p-2 rounded cursor-pointer hover:bg-green-600"
-        disabled={!isConnected || !name || !duration || options.length === 0}
-      >
-        Create
-      </button>
+      {!isConnected ? (
+        <ConnectWallet />
+      ) : (
+        <button
+          onClick={handleCreatePoll}
+          className="w-full bg-green-500 text-white mt-2 p-2 rounded cursor-pointer hover:bg-green-600"
+          disabled={!isConnected || !name || !duration || options.length === 0}
+        >
+          Create
+        </button>
+      )}
     </div>
   );
 }

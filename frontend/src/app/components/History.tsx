@@ -47,7 +47,7 @@ export default function History({ pollId }: { pollId: number }) {
   };
 
   return (
-    <div className="max-w-md mx-auto bg-gray-100 p-4 rounded-lg shadow-lg">
+    <div className="max-w-md mx-auto bg-gray-200 p-4 rounded-lg shadow-lg">
       <h1 className="text-2xl font-bold text-center text-gray-800">
         Vote history
       </h1>
@@ -58,7 +58,7 @@ export default function History({ pollId }: { pollId: number }) {
         <ul className="mt-4 space-y-2">
           {voteHistory.map((item, index) => (
             <li key={index}>
-              <div className="flex justify-between flex-wrap rounded-lg p-1 bg-gray-200 shadow-md">
+              <div className="flex justify-between flex-wrap rounded-lg p-1 bg-white shadow-md">
                 <div className="flex flex-col space-y-1">
                   <p>
                     <strong>Option:</strong> {item.optionName}

@@ -27,12 +27,12 @@ export default function Vote({ pollId }: VoteProps) {
 
   return (
     <div
-      className={`max-w-md mx-auto bg-amber-100 shadow-lg rounded-lg p-6 m-4 ${
+      className={`max-w-md mx-auto bg-amber-100 shadow-lg rounded-lg p-4 mb-2 ${
         hasEnded ? "bg-gray-300" : ""
       }`}
     >
       <h1 className="text-2xl font-bold text-center text-gray-800">Poll</h1>
-      <h2 className="text-1xl text-center text-gray-800 mb-6">ID: {pollId}</h2>
+      <h2 className="text-1xl text-center text-gray-800 mb-4">ID: {pollId}</h2>
 
       {isLoading ? (
         <div className="text-center text-lg font-semibold text-gray-500 mt-4">
