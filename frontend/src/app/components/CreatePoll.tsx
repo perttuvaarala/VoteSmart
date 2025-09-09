@@ -61,17 +61,13 @@ export default function CreatePoll() {
           </li>
         ))}
       </ul>
-      {!isConnected ? (
-        <ConnectWallet />
-      ) : (
-        <button
-          onClick={handleCreatePoll}
-          className="w-full bg-green-500 text-white mt-2 p-2 rounded cursor-pointer hover:bg-green-600"
-          disabled={!isConnected || !name || !duration || options.length === 0}
-        >
-          Create
-        </button>
-      )}
+      <button
+        onClick={handleCreatePoll}
+        className="w-full bg-green-500 text-white mt-2 p-2 rounded cursor-pointer hover:bg-green-600"
+        disabled={!isConnected || !name || !duration || options.length === 0}
+      >
+        Create
+      </button>
     </div>
   );
 }

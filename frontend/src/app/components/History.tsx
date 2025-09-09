@@ -47,7 +47,7 @@ export default function History({ pollId }: { pollId: number }) {
   };
 
   return (
-    <div className="max-w-md mx-auto bg-gray-200 p-4 rounded-lg shadow-lg">
+    <div className="max-w-md mx-auto bg-amber-100 p-3 rounded-lg shadow-lg">
       <h1 className="text-2xl font-bold text-center text-gray-800">
         Vote history
       </h1>
